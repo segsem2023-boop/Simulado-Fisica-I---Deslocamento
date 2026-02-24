@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação DS II - SCR TIC 106D</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #c0392b; --success: #27ae60; --error: #e74c3c; --bg: #fdfdfd; }
+        body { font-family: "Times New Roman", Times, serif; background-color: #ddd; padding: 20px; color: #333; }
+        
+        .exam-page { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border: 1px solid #999; box-shadow: 0 0 10px rgba(0,0,0,0.2); position: relative; }
+        
+        .exam-header { border: 2px solid #000; padding: 15px; margin-bottom: 30px; line-height: 1.4; }
+        .school-name { font-size: 20px; font-weight: bold; text-align: center; text-transform: uppercase; display: block; margin-bottom: 10px; }
+        .exam-info-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .exam-info-table td { border: 1px solid #333; padding: 8px; font-size: 14px; }
+        .label { font-weight: bold; text-transform: uppercase; font-size: 12px; display: block; }
+        
+        .instructions { font-size: 13px; background: #eee; padding: 10px; border: 1px solid #ccc; margin-bottom: 25px; font-style: italic; }
+        
+        .question-block { margin-bottom: 35px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .q-text { font-size: 16px; font-weight: bold; margin-bottom: 12px; display: block; text-align: justify; }
+        .option-item { border: 1px solid #ddd; padding: 12px; margin-bottom: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; }
+        .option-item:hover { background-color: #f5f5f5; border-color: #999; }
+        
+        .marker { width: 25px; height: 25px; border: 1px solid #000; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; margin-right: 15px; font-weight: bold; flex-shrink: 0; }
+        
+        .correct { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
+        .wrong { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        .explanation-box { display: none; margin-top: 10px; padding: 15px; background: #e8f4fd; border-left: 5px solid #3498db; font-size: 14px; }
+        .disabled { pointer-events: none; }
+        
+        .score-box { position: fixed; top: 20px; right: 20px; background: #000; color: #fff; padding: 20px; border-radius: 5px; text-align: center; z-index: 1000; }
+    </style>
+</head>
+<body>
+
+<div class="score-box">
+    <div style="font-size: 12px; text-transform: uppercase;">Acertos</div>
+    <div id="currentScore" style="font-size: 24px; font-weight: bold;">0</div>
+    <div style="border-top: 1px solid #555; margin-top: 5px; padding-top: 5px; font-size: 12px;">Total: 15</div>
+</div>
+
+<div class="exam-page">
+    <div class="exam-header">
+        <span class="school-name">ETEC Profa. Dra. Doroti Quiomi Kanashiro Toyohara</span>
+        <table class="exam-info-table">
+            <tr>
+                <td colspan="2"><span class="label">Componente Curricular:</span> Dispositivos Semicondutores (DS II)</td>
+                <td><span class="label">Série:</span> 3A</td>
+                <td><span class="label">Turma:</span> B</td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="label">Curso:</span> MTEC - Eletrônica</td>
+                <td colspan="2"><span class="label">Professor:</span> Cesar Augusto A de Souza</td>
+            </tr>
+            <tr>
+                <td colspan="3"><span class="label">Aluno:</span> <input type="text" style="width: 90%; border:none; outline:none; font-family:serif; font-size: 16px;" placeholder="Nome Completo"></td>
+                <td><span class="label">Data:</span> ____/____/2026</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="instructions">
+        <strong>Instruções:</strong> Avaliação sobre o SCR TIC 106D. O feedback será exibido imediatamente após a escolha da alternativa para fins de reforço de aprendizagem.
+    </div>
+
+    <div id="quiz-container"></div>
+</div>
+
+<script>
+const questions = [
+    { q: "Em um circuito de corrente contínua (DC), qual o comportamento do SCR TIC 106D após a remoção do sinal de gatilho (gate)?", options: ["O SCR entra em corte imediatamente.", "O SCR permanece em condução (estado ON).", "O SCR entra em modo de oscilação reversa.", "A corrente de anodo torna-se nula."], correct: 1, exp: "Em DC, uma vez que a regeneração interna é iniciada, o gate perde o controle. O SCR permanece 'travado' em ON." },
+    { q: "A manutenção da condução do SCR sem sinal no gate é explicada fisicamente por:", options: ["Efeito capacitivo.", "Regeneração interna entre os dois transistores equivalentes (NPN e PNP).", "Resistência da camada de depleção.", "Íons no catodo."], correct: 1, exp: "A corrente de coletor de um transistor alimenta a base do outro, mantendo o dispositivo saturado." },
+    { q: "Por que remover a polarização do gate em regime DC após o disparo?", options: ["Aumentar a frequência.", "Evitar dissipação de potência e aquecimento desnecessário no gate.", "Garantir o bloqueio reverso.", "Reduzir a tensão VTM."], correct: 1, exp: "O gate consome energia e gera calor. Como ele não desliga o SCR em DC, deve-se cessar o sinal após o disparo." },
+    { q: "O que define a 'Corrente de Manutenção' (Holding Current - IH)?", options: ["Corrente máxima de gate.", "Corrente mínima de disparo.", "Valor mínimo de corrente de anodo necessário para manter o SCR em condução.", "Corrente de fuga reversa."], correct: 2, exp: "Abaixo da IH, o ganho interno cai e o SCR retorna ao estado de bloqueio (OFF)." },
+    { q: "O que representa a 'Latching Current' (IL)?", options: ["Corrente de surto.", "Corrente mínima de anodo para o SCR travar em ON logo após retirar o pulso de gate.", "Corrente de avalanche.", "Curto no anodo."], correct: 1, exp: "IL é o valor que garante a transição estável para o estado de condução." },
+    { q: "Qual a queda de tensão máxima (VTM) do TIC 106D em condução (5A)?", options: ["0,7 V", "1,7 V", "5,0 V", "12,0 V"], correct: 1, exp: "O valor de 1,7V é o parâmetro de projeto para dissipação térmica sob carga nominal." },
+    { q: "O TIC 106D tem 'Gate Sensível'. Qual sua IGT típica?", options: ["2 A", "200 microamperes (200µA)", "100 mA", "0 A"], correct: 1, exp: "A alta sensibilidade (200µA) permite o acionamento direto por drivers de baixa corrente." },
+    { q: "Qual a função do resistor entre Gate e Catodo?", options: ["Limitar VAK.", "Aumentar o ganho.", "Drenar ruídos elétricos e evitar disparos acidentais (instabilidade).", "Fusível."], correct: 2, exp: "Ele evita que correntes induzidas ou transientes (dv/dt) disparem o gatilho sensível indevidamente." },
+    { q: "O sufixo 'D' no TIC 106D indica qual VDRM?", options: ["100 V", "200 V", "400 V", "600 V"], correct: 2, exp: "O modelo 'D' suporta até 400V no estado de bloqueio repetitivo." },
+    { q: "Como desligar o SCR em um circuito DC?", options: ["Inverter o gate.", "Pulso negativo no gate.", "Reduzir a corrente de anodo abaixo da IH ou abrir o circuito.", "Aumentar VAK."], correct: 2, exp: "Desligar em DC requer a interrupção da corrente principal (comutação forçada)." },
+    { q: "O que ocorre se a tensão VAK ultrapassar o limite nominal (Breakover)?", options: ["Condução forçada por avalanche da junção central.", "O SCR vira isolante.", "O gate entra em curto.", "IH torna-se infinita."], correct: 0, exp: "O excesso de tensão rompe a barreira interna, forçando a condução sem gate." },
+    { q: "Como a temperatura (Tj) afeta o disparo do TIC 106D?", options: ["Exige mais IGT.", "Diminui a IGT necessária para o disparo.", "Aumenta a isolação.", "Inibe a regeneração."], correct: 1, exp: "O calor gera portadores de carga térmicos, facilitando o disparo indesejado." },
+    { q: "O efeito 'dv/dt' causa disparo indesejado devido a:", options: ["Calor na carga.", "Corrente capacitiva interna por variação rápida de tensão.", "Falta de dissipador.", "Fios longos."], correct: 1, exp: "Variações bruscas de tensão geram correntes nas capacitâncias parasitas das junções." },
+    { q: "Qual o princípio do disparo por LUZ (LASCR)?", options: ["Derretimento do silício.", "Fótons criam pares elétron-lacuna na região da porta.", "Resfriamento do gate.", "Resistência do catodo."], correct: 1, exp: "A luz fornece energia para gerar portadores livres, iniciando a condução." },
+    { 
+        q: "Análise de Circuito: Em um TIC 106D (IGT=200µA e IH=8mA), se aplicarmos uma corrente de gate de 150µA em um circuito onde a carga consome apenas 5mA, o que acontecerá?", 
+        options: [
+            "O SCR dispara e permanece ligado.", 
+            "O SCR não dispara (Ig < IGT) e, se fosse disparado por outro meio, não permaneceria ligado (I_anodo < IH).", 
+            "O SCR queima por falta de corrente.", 
+            "O SCR funciona como um amplificador linear de potência."
+        ], 
+        correct: 1, 
+        exp: "Para disparar, Ig deve atingir 200µA. Para manter-se ligado, a corrente de anodo deve ser de no mínimo 8mA. Ambas as condições de projeto não foram atingidas." 
+    }
+];
+
+let score = 0;
+function renderQuiz() {
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = questions.map((q, qIdx) => `
+        <div class="question-block" id="q-block-${qIdx}">
+            <span class="q-text">${qIdx + 1}. ${q.q}</span>
+            <div class="options-list">
+                ${q.options.map((opt, oIdx) => `
+                    <div class="option-item" onclick="handleSelect(${qIdx}, ${oIdx})">
+                        <span class="marker">${String.fromCharCode(65 + oIdx)}</span>
+                        ${opt}
+                    </div>
+                `).join('')}
+            </div>
+            <div class="explanation-box" id="exp-${qIdx}"></div>
+        </div>
+    `).join('');
+}
+
+function handleSelect(qIdx, oIdx) {
+    const block = document.getElementById(`q-block-${qIdx}`);
+    const items = block.querySelectorAll('.option-item');
+    const expBox = document.getElementById(`exp-${qIdx}`);
+    const correct = questions[qIdx].correct;
+
+    Array.from(items).forEach(item => item.classList.add('disabled'));
+
+    if(oIdx === correct) {
+        items[oIdx].classList.add('correct');
+        score++;
+        document.getElementById('currentScore').innerText = score;
+    } else {
+        items[oIdx].classList.add('wrong');
+        items[correct].classList.add('correct');
+    }
+
+    expBox.innerHTML = `<strong>JUSTIFICATIVA TÉCNICA:</strong> ${questions[qIdx].exp}`;
+    expBox.style.display = 'block';
+}
+
+renderQuiz();
+</script>
+
+</body>
+</html>
